@@ -1,0 +1,12 @@
+version: 2
+ethernets:
+  mgmt:
+    match:
+      macaddress: "${mgmt_mac}"
+    dhcp4: true
+  data:
+    match:
+      macaddress: "${data_mac}"
+    dhcp4: true
+    dhcp4-overrides:
+      use-routes: false

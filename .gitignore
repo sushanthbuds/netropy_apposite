@@ -1,0 +1,64 @@
+# OpenTofu / Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Generated variable files (may contain SSH public keys)
+lab.auto.tfvars.json
+generated.auto.tfvars
+*.auto.tfvars.json
+
+# libvirt runtime storage
+libvirt-pool/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# Secrets and credentials — never commit
+.env
+.env.*
+*.pem
+*.key
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+credentials.json
+secrets.json
+*.p12
+*.pfx
+
+# AWS / cloud credential files
+.aws/credentials
+*.credentials
+
+# Large VM images (keep locally; download per setup docs)
+images/*.img
+images/*.qcow2
+images/*.iso
+
+# Editor and OS
+.DS_Store
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Logs and debug bundles
+*.log
+failure-bundle/
+debug-bundle/

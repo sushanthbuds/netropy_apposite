@@ -1,0 +1,32 @@
+---
+description: Core rules for the Netropy VE provisioning intern project
+alwaysApply: true
+---
+
+# Netropy Lab — AI Assistant Rules
+
+Read **AGENTS.md** at the repo root before making changes.
+
+## Must do
+
+- One narrow task per prompt; do not expand scope.
+- Inspect relevant files before editing (see AGENTS.md "Read these files first").
+- Plan before coding: assumptions, files, tests, risks.
+- End with **Verified / Assumed / Unknown / Needs Product Confirmation**.
+- Run verification commands before claiming success.
+
+## Must not
+
+- Invent Netropy VE behavior (NIC model, mgmt URL, drivers) — flag as Needs Product Confirmation.
+- Commit or paste secrets, tfstate, or `lab.auto.tfvars.json`.
+- Skip `./scripts/check-secrets.sh` before commits.
+- Run `tofu destroy`, `run-destroy.sh`, or `virsh destroy` without explaining impact.
+- Run apply scripts with `sudo`.
+
+## Key paths
+
+- Spec: `project_objective/Netropy-VE-Provisioning-Intern-Project.md`
+- JSON example: `config/example-kvm.json`
+- KVM module: `modules/kvm/`
+- Setup checks: `scripts/verify-setup.sh`
+- Security: `docs/phase_2/security-guardrails.md`

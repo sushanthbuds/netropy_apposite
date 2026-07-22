@@ -1,0 +1,14 @@
+#cloud-config
+hostname: ${hostname}
+users:
+  - default
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+packages:
+  - qemu-guest-agent
+  - iperf3
+package_update: true
+package_upgrade: false

@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netropy-lab"
+version = "0.1.0"
+description = "CLI to provision a Netropy VE test lab on KVM, ESXi, or AWS"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+netropy-lab = "netropy_lab.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["netropy_lab*"]
