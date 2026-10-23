@@ -16,7 +16,13 @@ variable "ubuntu_image" {
 
 variable "netropy_image" {
   type        = string
-  description = "Path to the Netropy VE qcow2 image"
+  description = "Path to the Netropy VE OS qcow2 (OVA disk1)"
+  default     = ""
+}
+
+variable "netropy_config_image" {
+  type        = string
+  description = "Path to the Netropy VE config qcow2 (OVA disk2, /config)"
   default     = ""
 }
 

@@ -1,0 +1,50 @@
+---
+# Post-up on-link data routes for Netropy lab Linux endpoints.
+# Does not configure Netropy Bridge/Route — only Linux peer-subnet routes.
+- name: Configure on-link data routes
+  hosts: linux_endpoints
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Require data_ip and peer_data_cidr host vars
+      ansible.builtin.assert:
+        that:
+          - data_ip is defined and data_ip | length > 0
+          - peer_data_cidr is defined and peer_data_cidr | length > 0
+          - peer_data_ip is defined and peer_data_ip | length > 0
+        fail_msg: "Inventory must set data_ip, peer_data_cidr, and peer_data_ip"
+
+    - name: Resolve data interface name by matching data_ip
+      ansible.builtin.shell: |
+        set -euo pipefail
+        ip -o -4 addr show | awk -v ip="{{ data_ip }}" '
+          $0 ~ ("inet " ip "/") { print $2; found=1; exit }
+          END { if (!found) exit 1 }
+        '
+      args:
+        executable: /bin/bash
+      register: data_iface_cmd
+      changed_when: false
+
+    - name: Set data_iface fact
+      ansible.builtin.set_fact:
+        data_iface: "{{ data_iface_cmd.stdout | trim }}"
+
+    - name: Install on-link route to peer data subnet
+      ansible.builtin.command:
+        cmd: "ip route replace {{ peer_data_cidr }} dev {{ data_iface }}"
+      register: route_result
+      changed_when: true
+
+    - name: Show installed peer route
+      ansible.builtin.command:
+        cmd: "ip route show {{ peer_data_cidr }}"
+      register: route_show
+      changed_when: false
+
+    - name: Ping peer data IP through Netropy path
+      ansible.builtin.command:
+        cmd: "ping -c 3 -W 2 {{ peer_data_ip }}"
+      register: peer_ping
+      changed_when: false
+      failed_when: peer_ping.rc != 0

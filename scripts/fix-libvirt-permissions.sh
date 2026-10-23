@@ -9,7 +9,7 @@ echo "Fixing permissions on ${POOL}..."
 sudo chown -R libvirt-qemu:libvirt "${POOL}"
 sudo chmod 755 "${POOL}"
 sudo chmod 660 "${POOL}"/* 2>/dev/null || true
-sudo chmod o+x "${HOME}" "${HOME}/netropy-lab"
+sudo chmod o+x "${HOME}" "${PROJECT_ROOT}"
 echo "Done."
 
 for vm in netropy-lab-linux1 netropy-lab-linux2; do

@@ -90,7 +90,9 @@ resource "libvirt_volume" "ubuntu_disk" {
     }
   }
 
-  capacity = 2147483648
+  # Must be >= base image virtual size (~3.5 GiB for noble cloud).
+  # 2 GiB overlays fail to boot → SSH "No route to host".
+  capacity = 10737418240
 
   backing_store = {
     path = libvirt_volume.ubuntu_base.path

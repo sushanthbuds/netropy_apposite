@@ -1,19 +1,15 @@
 # Phase 2 — Development Host Setup Verification
 
-**Phase:** 2, Task 2-2  
-**Host:** Linux (KVM/libvirt development machine)  
-**Date verified:** July 2026  
+**Phase:** 2, Task 2-2\
+**Host:** Linux (KVM/libvirt development machine)\
+**Date verified:** July 2026\
 **Status:** Complete
-
----
 
 ## Purpose
 
 Confirm Python, virtual environment tooling, OpenTofu, KVM/libvirt, and cloud-init-related tooling are available before building the provisioning tool.
 
 **Exit gate (Phase 2):** A fresh shell can run the documented setup checks successfully.
-
----
 
 ## How to run checks
 
@@ -26,40 +22,36 @@ chmod +x scripts/verify-setup.sh
 
 All lines marked **PASS** under required sections must succeed. **WARN** lines are informational.
 
----
-
 ## Verification results
 
 Verified on the development host July 2026.
 
 | Component | Command | Result |
-|-----------|---------|--------|
+|----|----|----|
 | Python 3 | `python3 --version` | **3.10.12** |
 | pip | `python3 -m pip --version` | **22.0.2** |
 | venv | `python3 -m venv --help` | **Available** |
 | OpenTofu | `tofu version` | **v1.12.4** (linux_amd64) |
 | virsh | `virsh --version` | **8.0.0** |
-| libvirt connection | `virsh -c qemu:///system list --all` | **OK** — lab VMs listed |
-| KVM | `kvm-ok` | **OK** — `/dev/kvm` exists, acceleration usable |
+| libvirt connection | `virsh -c qemu:///system list --all` | **OK** |
+| KVM | `kvm-ok` | **OK** |
 | QEMU | `qemu-system-x86_64 --version` | **6.2.0** |
-| libvirt group | `groups` | **OK** — user in `libvirt` group |
-| Ubuntu cloud image | `images/noble-server-cloudimg-amd64.img` | **OK** — ~593 MiB |
+| libvirt group | `groups` | **OK** |
+| Ubuntu cloud image | `images/noble-server-cloudimg-amd64.img` | **OK** |
 | Config validation | `netropy-lab validate -c config/example-kvm.json` | **OK** |
 
 ### cloud-init note
 
 | Check | Result |
-|-------|--------|
-| `cloud-init` CLI on host | **Not installed** |
+|----|----|
+| `cloud-init` CLI on host | Guest cloud-init |
 | Guest cloud-init | **Works** — OpenTofu `libvirt_cloudinit_disk` + YAML under `modules/kvm/cloud-init/` |
 
 The host does not require the `cloud-init` package for the current KVM workflow. Cloud-init runs **inside** Ubuntu guests via ISOs created by the libvirt provider. Installing `cloud-init` on the host is optional (useful for debugging guest configs locally).
 
----
-
 ## Sample command output (sanitized)
 
-```
+```console
 $ python3 --version
 Python 3.10.12
 
@@ -90,8 +82,6 @@ $ PYTHONPATH=cli python3 -m netropy_lab.cli validate -c config/example-kvm.json
 Config OK: config/example-kvm.json
 ```
 
----
-
 ## Verified / Assumed / Unknown
 
 ### Verified
@@ -113,8 +103,6 @@ Config OK: config/example-kvm.json
 
 - Whether mentor requires host `cloud-init` package installed explicitly.
 - WSL2-specific checks if development moves back to WSL (nested virt, `.wslconfig`).
-
----
 
 ## Prerequisites reference (for README)
 

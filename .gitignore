@@ -26,6 +26,7 @@ __pycache__/
 venv/
 dist/
 build/
+deliverables/
 
 # Secrets and credentials — never commit
 .env
@@ -62,3 +63,17 @@ images/*.iso
 *.log
 failure-bundle/
 debug-bundle/
+
+# Ansible generated inventory (IPs from lab JSON)
+ansible/inventory/lab.generated.*
+
+# Netropy VE product images (Apposite proprietary) and other disk images
+Netropy-VM/
+*.ova
+*.qcow2
+*.img
+*.ppm
+
+# Test / tool caches
+.pytest_cache/
+.git/cursor/

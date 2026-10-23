@@ -1,6 +1,6 @@
 {
   "platform": "kvm",
-  "netropy_image": "/home/sushanthbuds/netropy-lab/images/netropy-ve.qcow2",
+  "netropy_image": "/home/soumi/netropy-lab/Netropy-VM/vn-disk1g-5.1.3.qcow2",
   "ubuntu_lts_version": "24.04",
   "naming_prefix": "netropy-lab",
   "ssh_public_key_file": "~/.ssh/id_ed25519.pub",
@@ -28,9 +28,9 @@
     "passthrough_data_ports": false,
     "vcpu": 2,
     "memory_mb": 2048,
-    "provision_netropy": false
+    "provision_netropy": true
   },
   "credentials": {
-    "note": "KVM uses local libvirt socket; no remote credentials required."
+    "note": "KVM uses local libvirt. Netropy SSH user is admin; do not put passwords in this file."
   }
 }

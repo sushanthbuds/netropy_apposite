@@ -39,23 +39,16 @@ PY
 LINUX1_MGMT_IP="${LAB_IPS[0]}"
 LINUX2_MGMT_IP="${LAB_IPS[1]}"
 
-python3 - <<'PY' "${CONFIG}" "${TFVARS}"
-import json, sys
+python3 - <<'PY' "${CONFIG}" "${TFVARS}" "${PROJECT_ROOT}/cli"
+import sys
 from pathlib import Path
 
-config_path = Path(sys.argv[1])
-out_path = Path(sys.argv[2])
-config = json.loads(config_path.read_text())
-payload = {
-    "naming_prefix": config.get("naming_prefix", "netropy-lab"),
-    "ssh_public_key": Path(config["ssh_public_key_file"]).expanduser().read_text().strip(),
-    "subnets": config["subnets"],
-    "instances": config["instances"],
-    "options": config.get("options", {}),
-    "netropy_image": config.get("netropy_image", ""),
-    "ubuntu_image": "/var/lib/netropy-lab-images/noble-server-cloudimg-amd64.img",
-}
-out_path.write_text(json.dumps(payload, indent=2) + "\n")
+sys.path.insert(0, sys.argv[3])
+from netropy_lab.tfvars import write_tfvars
+from netropy_lab.validator import validate_config
+
+config = validate_config(Path(sys.argv[1]))
+write_tfvars(config, Path(sys.argv[2]))
 PY
 
 cd "${SCRIPT_DIR}"
@@ -67,11 +60,11 @@ echo "Fixing libvirt pool permissions (enter password if prompted)..."
 sudo chown -R libvirt-qemu:libvirt "${POOL}" 2>/dev/null || true
 sudo chmod 755 "${POOL}"
 sudo chmod 660 "${POOL}"/* 2>/dev/null || true
-sudo chmod o+x "${HOME}" "${HOME}/netropy-lab"
+sudo chmod o+x "${HOME}" "${PROJECT_ROOT}"
 
 echo ""
 echo "Ensuring VMs autostart and are running..."
-for vm in netropy-lab-linux1 netropy-lab-linux2; do
+for vm in netropy-lab-linux1 netropy-lab-linux2 netropy-lab-netropy; do
   virsh -c qemu:///system autostart "${vm}" >/dev/null 2>&1 || true
   state="$(virsh -c qemu:///system domstate "${vm}" 2>/dev/null || echo missing)"
   if [[ "${state}" == "running" ]]; then

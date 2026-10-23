@@ -1,6 +1,8 @@
-# Phase 0 Proof of Concept
+# Phase 3 Proof of Concept
 
 Boot one Ubuntu VM on local KVM using OpenTofu + libvirt + cloud-init.
+
+This POC validates the tool stack for workbook **Phase 3** (tool selection). The project objective document calls the same work **Phase 0**.
 
 ## Prerequisites
 

@@ -17,7 +17,7 @@ Build a **command-line tool** that reads one **JSON configuration file** and pro
 | Linux-1 | 1 mgmt + 1 data | iperf3 traffic endpoint |
 | Linux-2 | 1 mgmt + 1 data | iperf3 traffic endpoint |
 
-Three subnets: **management**, **data-1**, **data-2**. Target platforms: **KVM** (first), then ESXi, then AWS.
+Three subnets: **management**, **data-1**, **data-2**. Target platforms: **KVM** (first), then ESXi.
 
 **Stack:** OpenTofu + platform providers + cloud-init (Ubuntu) + thin Python CLI.
 
@@ -36,7 +36,9 @@ Before editing, inspect the files relevant to the task:
 | Lab design | `project_objective/Netropy-VE-Provisioning-Intern-Project.md`, `project_objective/netropy-topology.svg` |
 | JSON / CLI | `config/example-kvm.json`, `cli/netropy_lab/validator.py`, `cli/netropy_lab/cli.py` |
 | KVM module | `modules/kvm/main.tf`, `modules/kvm/variables.tf`, `modules/kvm/outputs.tf`, `modules/kvm/cloud-init/` |
-| Phase 0 POC | `poc/main.tf`, `poc/README.md` |
+| ESXi / Phase 8 | `docs/phase_8/phase8-development-guide.md`, `docs/phase_8/esxi-setup-checklist.md`, `docs/phase_8/kvm-to-vsphere-mapping.md` |
+| Wrap-up / Phase 9 | `docs/phase_9/phase9-development-guide.md`, `docs/phase_9/handover-and-backlog.md` |
+| Phase 3 POC | `poc/main.tf`, `poc/README.md`, `docs/phase_3/` |
 | Setup / dev env | `docs/phase_2/setup-verification.md`, `scripts/verify-setup.sh` |
 | Security | `docs/phase_2/security-guardrails.md`, `scripts/check-secrets.sh` |
 | Git workflow | `docs/phase_2/branch-strategy.md` |
@@ -49,7 +51,7 @@ When `README.md` exists at the repo root, read it as well.
 
 - **One narrow task per prompt.** Do not expand scope beyond the stated task.
 - **Do not invent Netropy VE behavior.** NIC models, boot mode, management URL, credentials, and driver requirements must come from product documentation or be labeled **Needs Product Confirmation**.
-- **Do not add ESXi or AWS modules** unless the task explicitly requests that platform.
+- **Do not add an ESXi module** unless the task explicitly requests that platform.
 - **Match existing conventions** — OpenTofu HCL object syntax (libvirt provider v0.9+), Python style in `cli/`, shell helpers in `modules/kvm/`.
 - **Minimize diff size.** Change only what the task requires.
 
@@ -61,7 +63,7 @@ When `README.md` exists at the repo root, read it as well.
 
 - **Never** commit, paste, or log: SSH private keys, AWS keys, passwords, tokens, or production credentials.
 - **Never** commit: `*.tfstate`, `.terraform/`, `lab.auto.tfvars.json`, `generated.auto.tfvars`, or `libvirt-pool/`.
-- Prefer environment variables, profiles, or IAM roles over secrets in JSON.
+- Prefer environment variables over secrets in JSON.
 - Redact secrets in command output and documentation.
 - Run `./scripts/check-secrets.sh` before committing.
 
@@ -120,7 +122,12 @@ Provide:
 # JSON validation
 PYTHONPATH=cli python3 -m netropy_lab.cli validate -c config/example-kvm.json
 
-# KVM lab (only when task requires provisioning)
+# KVM lab via CLI (Phase 6 — preferred)
+PYTHONPATH=cli python3 -m netropy_lab.cli up -c config/example-kvm.json
+PYTHONPATH=cli python3 -m netropy_lab.cli verify -c config/example-kvm.json
+PYTHONPATH=cli python3 -m netropy_lab.cli down -c config/example-kvm.json
+
+# KVM lab (fallback shell scripts)
 cd modules/kvm && ./run-apply.sh
 cd modules/kvm && ./run-destroy.sh
 
@@ -155,13 +162,14 @@ verification, verified facts, assumptions, and recommended next task.
 
 | Component | Status |
 |-----------|--------|
-| Phase 0 POC (`poc/`) | Done — single Ubuntu VM on KVM |
-| KVM module (`modules/kvm/`) | In progress — 3 networks, 2 Linux VMs; Netropy gated on image |
-| CLI (`cli/`) | Scaffold — `validate`, `up`, `down` |
-| ESXi / AWS modules | Not started |
-| `verify` command | Not started |
+| Phase 3 POC (`poc/`) | Done — single Ubuntu VM on KVM; write-up in `docs/phase_3/` |
+| KVM module (`modules/kvm/`) | Phase 5 done — 3 networks, 2 Linux VMs, Netropy VE 5.1.3 |
+| CLI (`cli/`) | Phase 6 done — `validate`, `plan`, `up`, `down`; Phase 7 done — `verify` |
+| ESXi module | Phase 8 **wrapped up** — manual Host Client Stage A/B + docs (`docs/phase_8/`); OpenTofu `modules/esxi/` not started (follow-on) |
+| `verify` command | Phase 7 KVM; ESXi verify not started |
+| Phase 9 wrap-up | **Done** — README + `docs/phase_9/` (demo, handover, limitations); passthrough stretch not implemented |
 
-Netropy provisioning uses `options.provision_netropy: false` until `netropy-ve.qcow2` is available.
+Netropy on this host (KVM) uses `options.provision_netropy: true` with OVA disk1 + disk2 qcow2 under `Netropy-VM/`. Write-ups: `docs/phase_5/phase5-development-guide.md`, `docs/phase_6/phase6-development-guide.md`. ESXi manual lab uses a separate **OVA** and Bridging; see `docs/phase_8/phase8-development-guide.md`.
 
 ---
 

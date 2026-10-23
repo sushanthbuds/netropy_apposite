@@ -171,12 +171,17 @@ resource "libvirt_cloudinit_disk" "linux1_ci" {
   })
 
   network_config = templatefile("${path.module}/cloud-init/linux-network-config.yaml", {
-    mgmt_mac = local.linux1.mgmt_mac
-    data_mac = local.linux1.data_mac
+    mgmt_mac  = local.linux1.mgmt_mac
+    data_mac  = local.linux1.data_mac
+    mgmt_ip   = local.linux1.mgmt_ip
+    mgmt_mask = local.linux1.mgmt_mask
+    mgmt_gw   = local.linux1.mgmt_gw
+    data_ip   = local.linux1.data_ip
+    data_mask = local.linux1.data_mask
   })
 
   meta_data = <<-EOT
-    instance-id: ${local.linux1.name}
+    instance-id: ${local.linux1.name}-netv2
     local-hostname: ${local.linux1.hostname}
   EOT
 }
@@ -190,12 +195,17 @@ resource "libvirt_cloudinit_disk" "linux2_ci" {
   })
 
   network_config = templatefile("${path.module}/cloud-init/linux-network-config.yaml", {
-    mgmt_mac = local.linux2.mgmt_mac
-    data_mac = local.linux2.data_mac
+    mgmt_mac  = local.linux2.mgmt_mac
+    data_mac  = local.linux2.data_mac
+    mgmt_ip   = local.linux2.mgmt_ip
+    mgmt_mask = local.linux2.mgmt_mask
+    mgmt_gw   = local.linux2.mgmt_gw
+    data_ip   = local.linux2.data_ip
+    data_mask = local.linux2.data_mask
   })
 
   meta_data = <<-EOT
-    instance-id: ${local.linux2.name}
+    instance-id: ${local.linux2.name}-netv2
     local-hostname: ${local.linux2.hostname}
   EOT
 }
@@ -261,6 +271,9 @@ resource "libvirt_domain" "linux1" {
         target = {
           bus = "sata"
           dev = "sda"
+        }
+        driver = {
+          type = "raw"
         }
       }
     ]
@@ -361,6 +374,9 @@ resource "libvirt_domain" "linux2" {
           bus = "sata"
           dev = "sda"
         }
+        driver = {
+          type = "raw"
+        }
       }
     ]
 
@@ -414,7 +430,7 @@ resource "libvirt_domain" "linux2" {
   running = true
 }
 
-# Netropy VE VM — enable when image is available (options.provision_netropy = true)
+# Netropy VE — OVA ships two SATA disks: 1000 MiB OS + 256 MiB /config.
 resource "libvirt_volume" "netropy_disk" {
   count = var.options.provision_netropy ? 1 : 0
   name  = "${local.netropy.name}.qcow2"
@@ -426,6 +442,8 @@ resource "libvirt_volume" "netropy_disk" {
     }
   }
 
+  # Keep existing pool volume; libvirt cannot shrink this in place.
+  # Guest virtual size remains the OVA disk1 size (~1000 MiB).
   capacity = 4294967296
 
   create = {
@@ -435,11 +453,36 @@ resource "libvirt_volume" "netropy_disk" {
   }
 }
 
+resource "libvirt_volume" "netropy_config_disk" {
+  count = var.options.provision_netropy ? 1 : 0
+  name  = "${local.netropy.name}-config.qcow2"
+  pool  = libvirt_pool.lab.name
+
+  target = {
+    format = {
+      type = "qcow2"
+    }
+    permissions = {
+      mode  = "0660"
+      owner = "64055"
+      group = "141"
+    }
+  }
+
+  capacity = 268435456
+
+  create = {
+    content = {
+      url = "file://${var.netropy_config_image}"
+    }
+  }
+}
+
 resource "libvirt_domain" "netropy" {
   count      = var.options.provision_netropy ? 1 : 0
   name       = local.netropy.name
-  memory     = 4194304
-  vcpu       = 2
+  memory     = 8388608
+  vcpu       = 8
   type       = "kvm"
   autostart  = true
 
@@ -449,8 +492,15 @@ resource "libvirt_domain" "netropy" {
     type_machine = "pc"
   }
 
+  # Pass through the host Intel Xeon ISA (SSE4.2/AVX/etc). Default qemu64
+  # hides those flags and Netropy then reports a QEMU Virtual CPU 2.5+.
+  cpu = {
+    mode = "host-passthrough"
+  }
+
   features = {
     acpi = true
+    apic = {}
   }
 
   devices = {
@@ -463,8 +513,23 @@ resource "libvirt_domain" "netropy" {
           }
         }
         target = {
-          bus = "virtio"
-          dev = "vda"
+          bus = "sata"
+          dev = "sda"
+        }
+        driver = {
+          type = "qcow2"
+        }
+      },
+      {
+        source = {
+          volume = {
+            pool   = libvirt_volume.netropy_config_disk[0].pool
+            volume = libvirt_volume.netropy_config_disk[0].name
+          }
+        }
+        target = {
+          bus = "sata"
+          dev = "sdb"
         }
         driver = {
           type = "qcow2"
@@ -475,6 +540,7 @@ resource "libvirt_domain" "netropy" {
     interfaces = [
       {
         type  = "network"
+        # virtio stays with the kernel so DHCP/mgmt can work; data NICs stay e1000 (virtio trial failed).
         model = { type = "virtio" }
         mac = {
           address = local.netropy.mgmt_mac
@@ -499,7 +565,7 @@ resource "libvirt_domain" "netropy" {
       },
       {
         type  = "network"
-        model = { type = "virtio" }
+        model = { type ="virtio" }
         mac = {
           address = local.netropy.data2_mac
         }

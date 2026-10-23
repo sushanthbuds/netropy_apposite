@@ -30,6 +30,10 @@ output "ssh_linux2" {
   value = "ssh ubuntu@${var.instances.linux2.mgmt_ip}"
 }
 
+output "ssh_netropy" {
+  value = var.options.provision_netropy ? "ssh admin@${var.instances.netropy.mgmt_ip}" : null
+}
+
 output "iperf3_example" {
   value = "iperf3 -c ${var.instances.linux2.data_ip} -B ${var.instances.linux1.data_ip}"
 }
@@ -40,7 +44,8 @@ output "next_steps" {
       ssh ubuntu@${var.instances.linux1.mgmt_ip}
       ssh ubuntu@${var.instances.linux2.mgmt_ip}
       iperf3 --version
-    Configure Netropy via its management UI, then run:
+    SSH to Netropy (when provisioned): ssh admin@${var.instances.netropy.mgmt_ip}
+    Then configure Bridge or Routed, and run:
       iperf3 -c ${var.instances.linux2.data_ip} -B ${var.instances.linux1.data_ip}
   EOT
 }

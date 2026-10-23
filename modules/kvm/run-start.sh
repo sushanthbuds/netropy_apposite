@@ -2,7 +2,7 @@
 # Start stopped lab VMs without re-running OpenTofu apply.
 set -euo pipefail
 
-for vm in netropy-lab-linux1 netropy-lab-linux2; do
+for vm in netropy-lab-linux1 netropy-lab-linux2 netropy-lab-netropy; do
   if ! virsh -c qemu:///system dominfo "${vm}" >/dev/null 2>&1; then
     echo "${vm}: not found — run ./run-apply.sh first" >&2
     continue

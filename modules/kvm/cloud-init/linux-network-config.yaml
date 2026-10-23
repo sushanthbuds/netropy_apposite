@@ -3,10 +3,18 @@ ethernets:
   mgmt:
     match:
       macaddress: "${mgmt_mac}"
-    dhcp4: true
+    dhcp4: false
+    addresses:
+      - ${mgmt_ip}/${mgmt_mask}
+    nameservers:
+      addresses:
+        - ${mgmt_gw}
+    routes:
+      - to: default
+        via: ${mgmt_gw}
   data:
     match:
       macaddress: "${data_mac}"
-    dhcp4: true
-    dhcp4-overrides:
-      use-routes: false
+    dhcp4: false
+    addresses:
+      - ${data_ip}/${data_mask}
